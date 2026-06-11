@@ -1,0 +1,22 @@
+{
+  "name": "timeline-eng",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.24.0",
+  "dependencies": {
+    "lodash": "^4.17.23",
+    "nanoid": "^5.1.6"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
