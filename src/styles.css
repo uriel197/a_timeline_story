@@ -51,7 +51,6 @@ body {
 }
 
 .app-container {
-  width: 90vw;
   background: var(--bg-color);
   border-radius: 8px;
   padding: 2rem;
@@ -73,9 +72,18 @@ body {
   color: var(--hull-light);
 }
 
+.space-between {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 20px;
+}
+
 .canvas-wrapper {
   background: transparent;
   /* border: 1px solid var(--accent); */
+  width: 90vw; /* The wrapper follows the window */
+  height: 50vh;
   margin: 50px auto;
   position: relative;
   border-radius: 4px;
@@ -92,75 +100,79 @@ body {
 }
 
 /* The Focus State Div */
-#infoCard {
+.infoDiv {
+  /* Layout & Sizing */
   position: absolute;
-  /* Center it perfectly over the canvas */
   top: 50%;
   left: 50%;
+  padding: 60px 20px;
+  width: 80%;
+  /* height: 90%; */
+  transform-origin: center; /* Opens from the middle */
   transform: translate(-50%, -50%);
 
-  /* Sizing and Look */
-  width: 80%;
-  height: 100%;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
-  border-radius: 12px;
-
-  /* Initial state: Hidden */
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
-
+  /* RAUMZEIT 24 Aesthetics */
+  background: rgba(35, 42, 49, 0.85);
+  border: 1px solid rgba(180, 191, 196, 0.2); /* Subtle grey border */
+  border-left: 20px solid var(--accent);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  /* pointer-events: none; */
+  display: none;
+  flex-direction: column;
+  /* align-items: stretch; */
+  justify-content: center;
   text-align: center;
-  z-index: 10;
+  overflow: hidden;
 }
 
-/* When the Timeline reaches focus state, we add this class via JS */
-#infoCard.visible {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1); /* Slight scale-up effect */
+.infoDiv-title {
+  font-size: 0.9rem;
+  opacity: 0.5;
+  margin-bottom: 5px;
 }
 
-/* Initial state for a little "pop" animation */
-#infoCard:not(.visible) {
-  transform: translate(-50%, -50%) scale(0.9);
-}
-
-#infoCard h3 {
+.infoDiv h3 {
   margin: 0 0 10px 0;
-  color: #3b7a87; /* Using your secondary color */
-  font-size: 1.4rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(217, 100, 41, 1); /* Orange/Yellow highlight */
 }
 
-#infoCard p {
-  color: #555;
+.infoDiv p {
+  color: var(--accent);
+  font-size: larger;
   line-height: 1.5;
   margin-bottom: 20px;
 }
 
-.deep-btn {
-  background: #3b7a87;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
+/* State: Opening */
+.infoDiv.opening {
+  animation: openEye 0.4s ease-out forwards;
+}
+
+/* State: Closing */
+.infoDiv.closing {
+  animation: closeEye 0.6s ease-in forwards;
+}
+
+#dive-btn {
+  background: transparent;
+  border: 1px solid var(--text);
+  color: var(--text);
+  padding: 6px 12px;
+  font-size: 0.7rem;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 
-.deep-btn:hover {
-  background: #2d5d67;
-}
-
-.controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
+#dive-btn:hover {
+  border: 1px solid var(--accent);
+  color: var(--accent);
 }
 
 button {
@@ -188,8 +200,46 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
 #status {
   font-size: 0.75rem;
   color: var(--accent-hazard);
   text-transform: uppercase;
+}
+
+@keyframes openEye {
+  0% {
+    /* Keep the -50% centering, then apply the start of the scale */
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(0);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes closeEye {
+  0% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(0);
+    opacity: 0;
+  }
 }

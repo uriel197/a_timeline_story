@@ -2,28 +2,32 @@ export class Camera {
   constructor(canvas) {
     this.canvas = canvas;
 
-    this.view = { min: 0, max: canvas.width };
-    this.target = { min: 0, max: canvas.width };
+    // 'view' is where the camera is right now
+    this.view = {
+      min: 0,
+      max: canvas.width,
+    };
+
+    // 'target' is where the camera wants to be
+    this.target = {
+      min: 0,
+      max: canvas.width,
+    };
+
+    // Easing factor (0.1 = smooth/slow, 0.2 = snappier)
+    this.lerpFactor = 0.15;
+    // 1. Initial State: Camera view is 5x wider than canvas
+    this.zoomOutFactor = 5;
   }
 
-  reset() {
-    this.target.min = 0;
-    this.target.max = this.canvas.width;
+  update() {
+    this.view.min += (this.target.min - this.view.min) * this.lerpFactor;
+    this.view.max += (this.target.max - this.view.max) * this.lerpFactor;
   }
 
   setTarget(min, max) {
     this.target.min = min;
     this.target.max = max;
-  }
-
-  update() {
-    const zoomingOut =
-      this.target.max - this.target.min > this.view.max - this.view.min + 1;
-
-    const ease = zoomingOut ? 0.07 : 0.08;
-
-    this.view.min += (this.target.min - this.view.min) * ease;
-    this.view.max += (this.target.max - this.view.max) * ease;
   }
 
   get zoomFactor() {
@@ -39,5 +43,40 @@ export class Camera {
       (this.canvas.width / (this.view.max - this.view.min));
 
     return (x / this.canvas.width) * usableWidth + padding;
+  }
+
+  async applyEntryEffect(parent) {
+    this.view.min = -this.canvas.width * this.zoomOutFactor;
+    this.view.max = this.canvas.width * (this.zoomOutFactor + 1);
+
+    // Wait for 800ms using async/await
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    console.log("Timeline ready for interaction");
+    parent.isInteractive = true;
+  }
+
+  async applyExitEffect(timeline) {
+    // Expand the view to 100x the canvas size
+    const center = (this.view.min + this.view.max) / 2;
+    const extremeRange = this.canvas.width * (this.zoomOutFactor * 4);
+
+    const newMin = center - extremeRange / 2;
+    const newMax = center + extremeRange / 2;
+
+    // Set target and wait for the camera to finish its easing
+    this.setTarget(newMin, newMax);
+
+    // We fade the alpha out while it shrinks
+    return new Promise(async (resolve) => {
+      const fade = setInterval(() => {
+        timeline.opacity -= 0.05;
+        if (timeline.opacity <= 0) {
+          timeline.opacity = 0;
+          clearInterval(fade);
+          resolve();
+        }
+      }, 16); // ~60fps
+    });
   }
 }

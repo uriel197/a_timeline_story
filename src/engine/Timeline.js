@@ -1,61 +1,19 @@
-import { TimelineRegistry } from "../utils/registry.js";
-import { Animation } from "./Animations.js";
+// engine/Timeline.js
 import { Camera } from "./Camera.js";
-import { fetchFromAPI } from "../utils/api/fetchAPI.js";
-import { getNestedValue } from "../utils/utilityFunctions.js";
 
 export class Timeline {
-  constructor(parentId, canvas) {
+  constructor(canvas, data, level, path = []) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.id = TimelineRegistry.generateKey(parentId, this.currentLevel);
-    this.parentId = parentId;
-    this.data = null;
-    this.isLoaded = false;
-    // Zoom state
-    this.currentLevel = 0;
-    this.levelHistory = [];
+    this.opacity = 1;
+    this.points = data.points;
+    this.path = path;
+    this.currentLevel = level;
     this.focusedSegment = null;
-    this.viewState = "OVERVIEW"; // Current state
-
-    this.checkCache();
     this.camera = new Camera(canvas);
-    this.animation = new Animation(canvas);
 
-    //************************* */
-    this.onBlur = null;
-    this._bindEvents();
-    this._loop();
-  }
-
-  checkCache() {
-    if (TimelineRegistry.cache.has(this.id)) {
-      this.data = TimelineRegistry.cache.get(this.id);
-      this.isLoaded = true;
-    } else {
-      fetchFromAPI(this);
-    }
-  }
-
-  _bindEvents() {
-    this.canvas.addEventListener("click", (e) => this._onClick(e));
-  }
-
-  _onClick(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-
-    const index = Math.floor(
-      (clickX / this.canvas.width) * (this.data.points - 1),
-    );
-
-    if (index < this.data.points - 1) {
-      this.animation.zoomIntoSegment(index, this);
-    }
-  }
-
-  reset() {
-    this.camera.reset();
+    this.isInteractive = false;
+    this.viewState = "OVERVIEW";
   }
 
   update() {
@@ -63,99 +21,69 @@ export class Timeline {
   }
 
   render() {
-    const { ctx, canvas } = this;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const { ctx, canvas, camera, points } = this;
 
-    const zoom = this.camera.zoomFactor;
+    const zoom = camera.zoomFactor;
     // Line width thins out as zoom increases
     const lineWidth = Math.max(0, 4 * (1 - zoom / 5));
     const radius = Math.min(8 * Math.sqrt(zoom), 40);
-    const points = [];
+    const pointsArray = [];
 
-    // Points
-    if (this.isLoaded) {
-      for (let i = 0; i < this.data.points; i++) {
-        points.push(this.camera.worldToScreen(i / (this.data.points - 1)));
-      }
+    // Calculate screen positions
+    for (let i = 0; i < points; i++) {
+      pointsArray.push(camera.worldToScreen(i / (points - 1)));
     }
-    // Draw Line
+
+    // Draw connecting line
     ctx.beginPath();
-    ctx.moveTo(points[0], canvas.height / 2);
-    ctx.lineTo(points.at(-1), canvas.height / 2);
-    ctx.strokeStyle = "rgba(59, 122, 135, 1)"; // Dynamic from CSS
-    ctx.globalAlpha = 0.3; // Make the line subtle
+    ctx.moveTo(pointsArray[0], canvas.height / 2);
+    ctx.lineTo(pointsArray.at(-1), canvas.height / 2);
+    ctx.strokeStyle = `rgba(59, 122, 135, ${this.opacity})`;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
-    ctx.globalAlpha = 1.0;
 
-    // draw the Points
-    points.forEach((x) => {
+    // Draw points
+    pointsArray.forEach((x) => {
       ctx.beginPath();
       ctx.arc(x, canvas.height / 2, radius, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(180, 191, 196, 1)";
+      ctx.fillStyle = `rgba(180, 191, 196, ${this.opacity})`;
       ctx.shadowBlur = radius * 1.5;
-      ctx.shadowColor = "rgba(180, 191, 196, 1)";
+      ctx.shadowColor = `rgba(180, 191, 196, ${this.opacity})`;
       ctx.fill();
       ctx.shadowBlur = 0;
     });
   }
 
-  _enterChildLevel() {
-    // Reset camera completely
-    this.camera.view.min = 0;
-    this.camera.view.max = this.canvas.width;
-    this.camera.reset();
+  zoomIntoSegment(index) {
+    // 1. ALWAYS use the full canvas width as the reference point
+    const worldWidth = this.canvas.width;
 
-    this.animation.applyEntryEffect(this);
-  }
+    // 2. Calculate segment size based on the total world, not the current zoom
+    const segmentWidth = worldWidth / (this.points - 1);
 
-  proceedToChild() {
-    let parentIndex;
-    if (this.levelHistory.length > 1) {
-      parentIndex = this.levelHistory[this.levelHistory.length - 2].index;
+    // 3. The coordinates are now absolute
+    const newMin = index * segmentWidth;
+    const newMax = (index + 1) * segmentWidth;
+
+    // 4. Update the camera
+    // If we are already here (during a resize), snap instantly to avoid shaking
+    if (this.viewState === "FOCUS" && this.focusedSegment?.index === index) {
+      this.camera.view.min = newMin;
+      this.camera.view.max = newMax;
+      this.camera.target.min = newMin;
+      this.camera.target.max = newMax;
     } else {
-      parentIndex = null;
+      this.camera.setTarget(newMin, newMax);
     }
 
-    // 1. Identify which child branch we are taking
-    const lastClick = this.levelHistory[this.levelHistory.length - 1];
-    const currentSegmentIndex = lastClick.index;
-
-    // 2. Increment level
-    this.currentLevel += 1;
-    // 3. Find the raw data for the new level in the cache
-    const rawChildData = Array.from(TimelineRegistry.cache.values()).find(
-      (b) => b?.currentLevel === this.currentLevel,
-    );
-
-    if (!rawChildData) {
-      console.error("No data found for level", this.currentLevel);
-      return;
-    }
-
-    // 4. Extract specific points for this branch using your utility
-    const branchPoints = getNestedValue(
-      rawChildData.points,
-      parentIndex,
-      currentSegmentIndex,
-    );
-
-    // 5. Update the "Chameleon" Timeline's skin
-    this.data = {
-      ...rawChildData,
-      points: branchPoints,
-    };
-
-    this.viewState = "DEEP";
-    this._enterChildLevel();
+    this.viewState = "FOCUS";
+    this.focusedSegment = { index, min: newMin, max: newMax };
   }
 
-  _loop() {
-    const tick = () => {
-      this.update();
-      this.render();
-      requestAnimationFrame(tick);
-    };
-    tick();
+  resetView() {
+    setTimeout(async () => {
+      this.viewState = "OVERVIEW";
+      this.camera.setTarget(0, this.canvas.width);
+    }, 400);
   }
 }

@@ -1,5 +1,4 @@
-import { TimelineRegistry } from "../registry";
-import { getNestedValue } from "../utilityFunctions";
+import { TimelineRegistry } from "./registry.js";
 
 export async function fetchFromAPI(node) {
   return new Promise((resolve) => {
@@ -31,37 +30,24 @@ export async function fetchFromAPI(node) {
       ];
 
       mockData.forEach((block) => {
-        TimelineRegistry.cache.set(block.id, block);
+        TimelineRegistry.cache.set(block.currentLevel, block);
       });
 
-      const currentNodeData = TimelineRegistry.cache.get(node.id);
+      const currentNodeData = TimelineRegistry.cache.get(node.currentLevel);
 
       if (currentNodeData) {
-        const points = getNestedValue(currentNodeData.points);
+        const points = currentNodeData.points[0];
 
         node.data = {
           ...currentNodeData,
           points,
         };
-        node.isLoaded = true;
+        //node.isLoaded = true;
         resolve(currentNodeData); // Success!
       } else {
-        console.error(`Node ${node.id} not found in API`);
+        console.error(`Node ${node.currentLevel} not found in API`);
         resolve(null);
       }
     }, 100);
   });
 }
-
-//   segments: [
-//     {
-//       backgroundUrl:
-//         "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
-//     },
-//     {
-//       backgroundUrl:
-//         "https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=1200",
-//     },
-//     { backgroundUrl: "https://picsum.photos/1200/800?random=3" },
-//     { backgroundUrl: "https://picsum.photos/1200/800?random=4" },
-//   ],
