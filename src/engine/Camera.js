@@ -15,7 +15,7 @@ export class Camera {
     };
 
     // Easing factor (0.1 = smooth/slow, 0.2 = snappier)
-    this.lerpFactor = 0.15;
+    this.lerpFactor = 0.18;
     // 1. Initial State: Camera view is 5x wider than canvas
     this.zoomOutFactor = 5;
   }
@@ -49,10 +49,8 @@ export class Camera {
     this.view.min = -this.canvas.width * this.zoomOutFactor;
     this.view.max = this.canvas.width * (this.zoomOutFactor + 1);
 
-    // Wait for 800ms using async/await
+    // Wait for 500ms using async/await
     await new Promise((resolve) => setTimeout(resolve, 500));
-
-    console.log("Timeline ready for interaction");
     parent.isInteractive = true;
   }
 
@@ -70,7 +68,7 @@ export class Camera {
     // We fade the alpha out while it shrinks
     return new Promise(async (resolve) => {
       const fade = setInterval(() => {
-        timeline.opacity -= 0.05;
+        timeline.opacity = Math.max(0, timeline.opacity - 0.05);
         if (timeline.opacity <= 0) {
           timeline.opacity = 0;
           clearInterval(fade);

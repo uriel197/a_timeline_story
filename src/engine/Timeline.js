@@ -1,16 +1,15 @@
-// engine/Timeline.js
 import { Camera } from "./Camera.js";
 
 export class Timeline {
-  constructor(canvas, data, level, path = []) {
+  constructor(canvas, points) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
+    this.ctx = canvas.getContext("2d", { alpha: true });
     this.opacity = 1;
-    this.points = data.points;
-    this.path = path;
-    this.currentLevel = level;
+    this.points = points;
     this.focusedSegment = null;
     this.camera = new Camera(canvas);
+    this.children = [];
+    this.contextMetadata = null;
 
     this.isInteractive = false;
     this.viewState = "OVERVIEW";
@@ -22,11 +21,12 @@ export class Timeline {
 
   render() {
     const { ctx, canvas, camera, points } = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const zoom = camera.zoomFactor;
     // Line width thins out as zoom increases
-    const lineWidth = Math.max(0, 4 * (1 - zoom / 5));
-    const radius = Math.min(8 * Math.sqrt(zoom), 40);
+    const lineWidth = Math.max(1, 4 * (1 - zoom / 5));
+    const radius = Math.min(8 * Math.sqrt(Math.max(zoom, 0.2)), 40);
     const pointsArray = [];
 
     // Calculate screen positions
@@ -67,7 +67,7 @@ export class Timeline {
 
     // 4. Update the camera
     // If we are already here (during a resize), snap instantly to avoid shaking
-    if (this.viewState === "FOCUS" && this.focusedSegment?.index === index) {
+    if (this.viewState === "FOCUS") {
       this.camera.view.min = newMin;
       this.camera.view.max = newMax;
       this.camera.target.min = newMin;
@@ -77,13 +77,14 @@ export class Timeline {
     }
 
     this.viewState = "FOCUS";
-    this.focusedSegment = { index, min: newMin, max: newMax };
+    this.focusedSegment = index;
   }
 
   resetView() {
-    setTimeout(async () => {
+    return new Promise((resolve) => {
       this.viewState = "OVERVIEW";
       this.camera.setTarget(0, this.canvas.width);
-    }, 400);
+      setTimeout(resolve, 450);
+    });
   }
 }

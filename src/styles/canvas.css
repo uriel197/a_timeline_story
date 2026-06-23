@@ -1,0 +1,452 @@
+:root {
+  /* DEFAULT: Industrial Teal Palette (Ship 1) */
+  --bg-color: rgba(25, 34, 43, 0.4); /* --rz24-dark */
+  --panel-bg: rgba(42, 45, 49, 1); /* --ship-charcoal */
+  --accent: rgba(59, 122, 135, 1); /* --ship-teal */
+  --highlight: rgba(212, 161, 58, 1); /* --ship-ochre */
+  --text: rgba(212, 161, 58, 1); /* --ship-ochre */
+  --glow: rgba(255, 157, 128, 0.6); /* --ship-glow with opacity */
+
+  /* Primary Hull Colors */
+  --ship-teal: #3b7a87; /* The muted, industrial blue-green */
+  --ship-ochre: #d4a13a; /* The "heavy machinery" utility yellow */
+  /* Structural & Shadow Colors */
+  --ship-charcoal: rgba(42, 45, 49, 0.9); /* The dark grey mechanical plating */
+  --ship-gunmetal: rgb(26, 26, 26); /* Deepest shadows and engine housing */
+  /* Accents & Lighting */
+  --ship-glow: #ff9d80; /* The warm light from the engine/thruster */
+  --ship-highlight: #5da4b1; /* Lighter teal for edges/reflections */
+  /* Environment (Background) */
+  --mars-dust: #913d2d; /* The deep reddish-brown background */
+  /* High-contrast ship body */
+  --hull-dark: rgba(32, 33, 36, 1);
+  --hull-light: rgba(210, 201, 178, 0.5);
+  /* Signature yellow accents */
+  --accent-hazard: rgba(228, 174, 53, 1);
+  /* Semi-transparent mechanical details & shadows */
+  --mechanical-detail: rgba(55, 58, 62, 0.85);
+  /* Atmospheric overlay for UI elements */
+  --ambient-haze: rgba(180, 185, 190, 0.4);
+  --case-bg: #8a9292;
+}
+
+/* Box sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.app-container {
+  background: var(--bg-color);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 15px 15px 10px rgba(0, 0, 0, 0.4);
+}
+
+.header h1 {
+  color: var(--accent-hazard);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 0.5rem;
+  border-left: 4px solid var(--accent-hazard);
+  padding-left: 15px;
+}
+
+.header p {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: var(--hull-light);
+}
+
+.canvas-wrapper {
+  background: transparent;
+  /* border: 1px solid var(--accent); */
+  width: 90vw; /* The wrapper follows the window */
+  height: 50vh;
+  margin: 50px auto;
+  position: relative;
+  border-radius: 4px;
+  /* Grid lines to make it look like a scanner */
+  background-image:
+    linear-gradient(rgb(0, 123, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0, 123, 255, 0.09) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+#timelineCanvas {
+  display: block;
+  width: 100%;
+}
+
+.infoDiv {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* padding: 30px 10px; */
+  width: 90%;
+  transform-origin: center;
+  transform: translate(-50%, -50%);
+
+  /* --- NEW RULES --- */
+  height: 90vh; /* Stops growing at 90% of the viewport height */
+  overflow-y: auto; /* Enables vertical scrolling */
+  /* ----------------- */
+
+  background: rgba(35, 42, 49);
+  border: 1px solid rgba(180, 191, 196, 0.2);
+  border-left: 20px solid var(--accent);
+  border-radius: 2px;
+  color: var(--text);
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: none;
+  flex-direction: column;
+}
+
+.infoDiv-title {
+  font-size: 0.9rem;
+  opacity: 0.5;
+  margin-bottom: 5px;
+}
+
+.infoDiv h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(217, 100, 41, 1); /* Orange/Yellow highlight */
+}
+
+.infoDiv p {
+  color: var(--accent);
+  font-size: larger;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* State: Opening */
+.infoDiv.opening {
+  animation: openEye 0.7s ease-out forwards;
+}
+
+/* State: Closing */
+.infoDiv.closing {
+  animation: closeEye 0.6s ease-in forwards;
+}
+
+button {
+  background: var(--accent);
+  border: 1px solid var(--accent-hazard);
+  border-radius: 10%;
+  color: var(--ship-charcoal);
+  box-shadow: 0 0 15px rgba(228, 174, 53, 0.4);
+  padding: 15px 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+button:hover {
+  color: var(--accent-hazard);
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+#status {
+  font-size: 0.75rem;
+  color: var(--accent-hazard);
+  text-transform: uppercase;
+}
+
+@keyframes openEye {
+  0% {
+    /* Keep the -50% centering, then apply the start of the scale */
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(0);
+    opacity: 0;
+  }
+  40% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes closeEye {
+  0% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scaleX(0.01) scaleY(0);
+    opacity: 0;
+  }
+}
+
+/* The Keyframe Animation */
+@keyframes cascadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered Execution using specific delays */
+#ui-overlay.active .terminal-row:nth-child(1) {
+  animation: cascadeIn 0.2s forwards 0.45s;
+}
+#ui-overlay.active .terminal-row:nth-child(2) {
+  animation: cascadeIn 0.2s forwards 0.6s;
+}
+#ui-overlay.active .terminal-row:nth-child(3) {
+  animation: cascadeIn 0.2s forwards 0.85s;
+}
+#ui-overlay.active .terminal-row:nth-child(4) {
+  animation: cascadeIn 0.2s forwards 1s;
+}
+#ui-overlay.active .terminal-row:nth-child(5) {
+  animation: cascadeIn 0.2s forwards 1.15s;
+}
+#ui-overlay.active .terminal-row:nth-child(6) {
+  animation: cascadeIn 0.2s forwards 1.3s;
+}
+#ui-overlay.active .terminal-row:nth-child(7) {
+  animation: cascadeIn 0.2s forwards 1.45s;
+}
+#ui-overlay.active .action-matrix {
+  animation: cascadeIn 0.1s forwards 0.4s;
+} /* Fast rigid snap for buttons */
+
+/* Glitch effect for unrecorded data */
+.system-flag-empty {
+  opacity: 0.4;
+  font-style: italic;
+  animation: flicker 0.1s 3; /* Flickers 3 times rapidly on load */
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+    color: #ff3366;
+  }
+}
+
+/* Avatar Container */
+.profile-avatar-wrapper {
+  background: rgba(0, 0, 0, 0.5);
+  width: 400px;
+  height: 300px;
+  border: 2px solid var(--accent); /* Assuming you have a teal/green accent variable */
+  border-radius: 4px;
+  flex-shrink: 0; /* Prevents the image container from being squished */
+  overflow: hidden;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image fills the box without stretching */
+}
+
+.avatar-placeholder {
+  color: rgba(0, 255, 204, 0.5);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.container {
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  flex-shrink: 0; /* Prevents the image container from being squished */
+}
+
+.flex-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  /* flex-grow: 1; */
+}
+
+.label {
+  color: rgb(59, 122, 135);
+}
+
+.terminal-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  gap: 0.5rem;
+  /* Initial hidden state for the cascade */
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.action-matrix {
+  display: flex;
+  justify-content: space-around;
+  margin: 1rem 0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Post Entries */
+.post-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  border-top: 2px solid rgba(0, 255, 204, 0.15);
+}
+
+.post-meta {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 5px;
+}
+
+.post-text {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  white-space: pre-wrap; /* Respects line breaks in their text */
+}
+
+.post-media {
+  max-width: 100%;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  border-radius: 2px;
+  margin-top: 2rem;
+}
+
+.comms-log {
+  margin-top: 2rem;
+  padding-right: 15px; /* Room for the scrollbar */
+  flex-grow: 1; /* Tells the log to fill remaining vertical space */
+  /* Makes only the logs scrollable */
+  min-height: 0; /* Crucial Flexbox defense rule allowing items to shrink */
+  padding-top: 1rem;
+}
+
+/* Custom Terminal Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--panel-bg);
+  border-left: 1px solid rgba(0, 255, 204, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hazard);
+}
+
+/* Divs for each Timeline segment */
+
+/* The invisible boundary matching the canvas exactly */
+#hud-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Let user drag the canvas underneath */
+  overflow: hidden; /* Hide labels that go off-screen */
+}
+
+/* The floating identification tags */
+.segment-label {
+  position: absolute;
+  transform: translate(
+    -50%,
+    -125%
+  ); /* Centers horizontally, floats slightly above the node */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Fluid padding and gaps based on window size */
+  gap: clamp(4px, 0.8vw, 8px);
+  padding: clamp(2px, 0.5vw, 4px) clamp(4px, 1vw, 8px);
+  background: var(--panel-bg);
+  border: 1px solid var(--mechanical-detail);
+  border-left: 5px solid var(--accent);
+  border-radius: 5px;
+  color: var(--hull-light);
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(10px, 0.9vw, 12px);
+  white-space: nowrap;
+
+  /* Re-enable clicking on the label itself */
+  pointer-events: auto;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.5);
+}
+
+.segment-label:hover {
+  background: var(--ship-charcoal);
+  color: var(--accent);
+  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* The tiny thumbnail */
+.segment-thumb {
+  width: clamp(40px, 6vw, 100px);
+  height: clamp(40px, 6vw, 100px);
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid var(--accent);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Fallback if no avatar exists */
+.thumb-placeholder {
+  width: clamp(40px, 6vw, 100px);
+  height: clamp(40px, 6vw, 100px);
+  border-radius: 2px;
+  background: var(--mechanical-detail);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  color: var(--accent);
+}
+
+@media screen and (max-width: 800px) {
+  .segment-label {
+    flex-direction: column;
+  }
+
+  .container {
+    flex-direction: column;
+  }
+}

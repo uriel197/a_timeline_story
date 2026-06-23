@@ -2,24 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Timeline Engine</title>
-    <link rel="stylesheet" href="./src/styles.css" />
+    <title>LEGACY // Personnel Archive v.04</title>
+
+    <!-- High-Tech Mono Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/canvas-components/styles/canvas.css" />
+    <link rel="stylesheet" href="./styles/dashboard.css" />
   </head>
   <body>
-    <div class="app-container">
-      <header class="header">
-        <h1>Timeline Engine</h1>
-        <p>Click a segment to dive deeper into Time</p>
-      </header>
-      <div class="canvas-wrapper">
-        <canvas id="timelineCanvas"></canvas>
-      </div>
-      <div class="controls">
-        <button onclick="zoomBack()">Zoom out</button>
-        <div id="status">Ready</div>
-      </div>
+    <div id="app">
+      <!-- UI LAYER: This is where the Form will live -->
+      <aside id="ui-layer" class="tactical-panel">
+        <!-- JavaScript will inject the Origin or Connection form here -->
+        <div class="title-bar">SYSTEM_BOOTING...</div>
+        <div class="loading-state">INITIALIZING DATABASE...</div>
+      </aside>
+
+      <!-- ENGINE LAYER: This is where the Canvas will live -->
+      <main id="engine-layer" class="timelineCanvas">
+        <div class="app-container">
+          <header class="header">
+            <h1>Timeline Engine</h1>
+            <p>Click a segment to dive deeper into Time</p>
+          </header>
+          <div class="canvas-wrapper">
+            <canvas id="timeline-canvas"></canvas>
+            <div id="hud-layer"></div>
+          </div>
+          <div class="controls">
+            <div id="status">Ready</div>
+          </div>
+        </div>
+      </main>
     </div>
-    <script type="module" src="./src/main.js"></script>
+
+    <!-- Entry point for Vite -->
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
