@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LEGACY // Personnel Archive v.04</title>
+
+    <!-- High-Tech Mono Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/canvas-components/styles/canvas.css" />
+    <link rel="stylesheet" href="./styles/dashboard.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#3b7a87" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ENGINE LAYER: This is where the Canvas will live -->
+      <main id="engine-layer" class="timelineCanvas">
+        <div class="app-container">
+          <header class="header">
+            <h1>Timeline Engine</h1>
+            <p>Click a segment to dive deeper into Time</p>
+          </header>
+          <div class="canvas-wrapper">
+            <canvas id="timeline-canvas"></canvas>
+            <div id="hud-layer"></div>
+          </div>
+          <div class="controls">
+            <div id="status">Ready</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Entry point for Vite -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
