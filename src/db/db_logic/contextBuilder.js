@@ -3,7 +3,7 @@ import {
   fetchAllNodes,
   fetchAllEdges,
   getParentsOfNode,
-} from "../../utilities/utilityFunctions.js";
+} from "../db_logic/utilityFunctions.js";
 
 // ==========================================
 // THE PARENT TIMELINE CONTEXT
@@ -17,7 +17,6 @@ export const buildParentTimelineContext = async (db, parentIds) => {
 
   // 2. Filter out null entries safely if a parent profile doesn't exist yet
   const parentNodes = [fatherNode, motherNode].filter(Boolean);
-  console.log(parentNodes);
 
   // 3. Look up the grandparents using the first available parent node
   // so the zoomBack track stays perfectly intact for subsequent ascends!

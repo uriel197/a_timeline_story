@@ -59,7 +59,6 @@ export const getOriginNode = (db) => {
   });
 };
 
-// Add this to your db.js (wherever saveNode lives)
 export const saveEdge = async (db, edgeObject) => {
   return new Promise((resolve, reject) => {
     // Make sure "edges" matches the actual name of your Edge objectStore!

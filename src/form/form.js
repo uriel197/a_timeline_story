@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { getOriginNode, saveNode, saveEdge, savePost } from "../db/db.js";
 import { buildOriginContext } from "../db/db_logic/contextBuilder.js";
 import {
@@ -7,6 +8,11 @@ import {
   fetchAllEdges,
 } from "../utilities/utilityFunctions.js";
 import { compressImageToBlob, renderSearchResults } from "./formUtilities.js";
+=======
+import { getOriginNode } from "../db/db.js";
+import { buildOriginContext } from "../db/db_logic/contextBuilder.js";
+import { renderOriginForm } from "./originForm.js";
+>>>>>>> master
 
 export const setupForm = async (container, db, manager) => {
   const refreshUI = async () => {
@@ -16,7 +22,10 @@ export const setupForm = async (container, db, manager) => {
       console.log(
         `Welcome back, ${origin.firstName}. Booting Timeline Engine...`,
       );
+<<<<<<< HEAD
       renderAddRelativeForm(container, db, refreshUI);
+=======
+>>>>>>> master
       const originContext = await buildOriginContext(db);
       await manager.executeContextBoot(originContext);
     } else {
@@ -27,6 +36,7 @@ export const setupForm = async (container, db, manager) => {
 
   refreshUI();
 };
+<<<<<<< HEAD
 
 function renderOriginForm(container, db, callback) {
   container.innerHTML = `
@@ -595,3 +605,5 @@ async function renderAddRelativeForm(
     }
   };
 }
+=======
+>>>>>>> master
